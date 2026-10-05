@@ -23,7 +23,7 @@
       <!-- Kartu Statistik -->
       <StatCards :stats="stats"/>
 
-      <!-- Tabel File Terbaru dengan Jarak Aman -->
+      <!-- Tabel File Terbaru -->
       <div>
         <LatestFilesTable 
           :files="stats.latest_files"
@@ -32,13 +32,21 @@
       </div>
     </div>
 
-    <!-- Modal Detail File (Ditambahkan di sini) -->
+    <!-- Modal Detail File -->
     <FileDetailModal 
       :is-open="isDetailModalOpen"
       :file-data="selectedFile"
       :user-role="userRole"
       @close="isDetailModalOpen = false"
       @refresh="fetchDashboardData"
+      @preview="openPreviewModal"
+    />
+
+    <!-- Modal Preview File (Ditambahkan agar dashboard bisa membuka preview) -->
+    <FilePreviewModal 
+      :is-open="isPreviewModalOpen"
+      :file-data="selectedFile"
+      @close="isPreviewModalOpen = false"
     />
   </div>
 </template>
@@ -49,13 +57,15 @@ import { useDashboard } from '../../composables/useDashboard';
 import StatCards from '../../components/dashboard/StatCards.vue';
 import LatestFilesTable from '../../components/dashboard/LatestFilesTable.vue';
 import FileDetailModal from '../../components/files/FileDetailModal.vue';
+import FilePreviewModal from '../../components/files/FilePreviewModal.vue';
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue';
 
 // Menggunakan composable useDashboard
 const { stats, loading, fetchDashboardData } = useDashboard();
 
-// State Modal Detail & User Role
+// State Modal Detail, Preview & User Role
 const isDetailModalOpen = ref(false);
+const isPreviewModalOpen = ref(false);
 const selectedFile = ref(null);
 const userRole = ref('viewer');
 
@@ -66,9 +76,18 @@ onMounted(() => {
   fetchDashboardData();
 });
 
-// Fungsi untuk membuka modal detail saat tombol detail di tabel diklik
+// Membuka modal detail saat tombol detail di tabel diklik
 const openDetailModal = (file) => {
   selectedFile.value = file;
   isDetailModalOpen.value = true;
+};
+
+// Membuka modal preview dari tombol Preview di modal detail
+const openPreviewModal = (file) => {
+  if (file) {
+    selectedFile.value = file;
+  }
+  isDetailModalOpen.value = false;
+  isPreviewModalOpen.value = true;
 };
 </script>

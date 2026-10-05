@@ -1,38 +1,93 @@
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+  <div class="space-y-8">
+    <!-- Header Dashboard -->
+    <div class="flex justify-between items-center py-3">
+      <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Dashboard Viewer Overview</h2>
       <button 
         @click="fetchDashboardData" 
-        class="bg-blue-600 text-white text-sm px-4 py-2 rounded hover:bg-blue-700 transition"
+        :disabled="loading"
+        class="btn-primary py-2 px-4 flex items-center gap-2 disabled:opacity-50"
       >
-        Refresh Data
+        <span v-if="loading" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+        <span>Refresh Data</span>
       </button>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="text-gray-500 py-4">Memuat data statistik...</div>
+    <!-- Loading State Menggunakan Komponen LoadingSpinner -->
+    <div v-if="loading && !stats.total_folders" class="py-16">
+      <LoadingSpinner message="Memuat data dashboard..." />
+    </div>
 
-    <div v-else>
-      <!-- Memanggil komponen kartu statistik -->
+    <!-- Konten Dashboard -->
+    <div v-else class="space-y-8">
+      <!-- Kartu Statistik -->
       <StatCards :stats="stats" />
 
-      <!-- Memanggil komponen tabel file terbaru -->
-      <LatestFilesTable :files="stats.latest_files" />
+      <!-- Tabel File Terbaru -->
+      <div>
+        <LatestFilesTable 
+          :files="stats.latest_files"
+          @detail="openDetailModal"
+        />
+      </div>
     </div>
+
+    <!-- Modal Detail File -->
+    <FileDetailModal 
+      :is-open="isDetailModalOpen"
+      :file-data="selectedFile"
+      :user-role="userRole"
+      @close="isDetailModalOpen = false"
+      @refresh="fetchDashboardData"
+      @preview="openPreviewModal"
+    />
+
+    <!-- Modal Preview File -->
+    <FilePreviewModal 
+      :is-open="isPreviewModalOpen"
+      :file-data="selectedFile"
+      @close="isPreviewModalOpen = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useDashboard } from '../../composables/useDashboard';
 import StatCards from '../../components/dashboard/StatCards.vue';
 import LatestFilesTable from '../../components/dashboard/LatestFilesTable.vue';
+import FileDetailModal from '../../components/files/FileDetailModal.vue';
+import FilePreviewModal from '../../components/files/FilePreviewModal.vue';
+import LoadingSpinner from '../../components/common/LoadingSpinner.vue';
 
 // Menggunakan composable useDashboard
 const { stats, loading, fetchDashboardData } = useDashboard();
 
+// State Modal Detail, Preview & User Role
+const isDetailModalOpen = ref(false);
+const isPreviewModalOpen = ref(false);
+const selectedFile = ref(null);
+const userRole = ref('viewer');
+
 onMounted(() => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  userRole.value = user.role || 'viewer';
+
   fetchDashboardData();
 });
+
+// Membuka modal detail saat tombol detail di tabel diklik
+const openDetailModal = (file) => {
+  selectedFile.value = file;
+  isDetailModalOpen.value = true;
+};
+
+// Membuka modal preview dari tombol Preview di modal detail
+const openPreviewModal = (file) => {
+  if (file) {
+    selectedFile.value = file;
+  }
+  isDetailModalOpen.value = false;
+  isPreviewModalOpen.value = true;
+};
 </script>
