@@ -15,16 +15,17 @@
       class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-20 md:hidden"
     ></div>
 
-    <!-- Sidebar Modern Minimalis & Responsif -->
+    <!-- Sidebar Modern Minimalis & Responsif (Diubah menjadi h-screen & sticky agar tetap diam saat halaman di-scroll) -->
     <aside 
       :class="[
-        'bg-white border-r border-slate-200 flex flex-col justify-between transition-all duration-300 z-30 shadow-sm fixed md:static inset-y-0 left-0',
+        'bg-white border-r border-slate-200 flex flex-col justify-between transition-all duration-300 z-30 shadow-sm h-screen sticky top-0 shrink-0',
         isOpen ? 'w-64 translate-x-0' : '-translate-x-full md:translate-x-0 md:w-20'
       ]"
     >
-      <div>
-        <!-- Logo & Brand Header (Digabung dengan Nama & Role) -->
-        <div class="h-auto py-4 px-5 flex items-center gap-3 border-b border-slate-100 overflow-hidden">
+      <!-- Bagian Atas: Logo & Menu (Menggunakan flex-1 dan overflow-y-auto jika menu terlalu banyak) -->
+      <div class="flex flex-col flex-1 overflow-y-auto">
+        <!-- Logo & Brand Header -->
+        <div class="h-auto py-4 px-5 flex items-center gap-3 border-b border-slate-100 overflow-hidden shrink-0">
           <img :src="logoSrc" alt="Logo" class="w-9 h-9 object-contain rounded-xl shrink-0" />
           
           <div v-if="isOpen" class="flex flex-col truncate">
@@ -36,7 +37,7 @@
         </div>
         
         <!-- Navigasi Menu Minimalis -->
-        <nav class="p-3 space-y-1.5">
+        <nav class="p-3 space-y-1.5 flex-1">
           <!-- Menu Admin -->
           <template v-if="userRole === 'admin'">
             <router-link 
@@ -60,10 +61,10 @@
             </router-link>
 
             <router-link 
-             to="/admin/folders" 
-             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition"
+               to="/admin/folders" 
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition"
               active-class="bg-blue-50 text-blue-600 font-semibold shadow-sm"
-             :title="!isOpen ? 'Folder' : ''"
+               :title="!isOpen ? 'Folder' : ''"
             >
               <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
@@ -72,10 +73,10 @@
             </router-link>
 
             <router-link 
-             to="/admin/files"
-             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition"
+               to="/admin/files"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition"
               active-class="bg-blue-50 text-blue-600 font-semibold shadow-sm"
-             :title="!isOpen ? 'Folder' : ''"
+               :title="!isOpen ? 'File' : ''"
             >
               <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -96,10 +97,10 @@
               <span v-if="isOpen">Dashboard</span>
             </router-link>
             <router-link 
-             to="/viewer/folder"
-             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition"
+               to="/viewer/folder"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition"
               active-class="bg-blue-50 text-blue-600 font-semibold shadow-sm"
-             :title="!isOpen ? 'Folder' : ''"
+               :title="!isOpen ? 'Folder' : ''"
             >
               <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
@@ -108,10 +109,10 @@
             </router-link>
 
             <router-link 
-             to="/viewer/file"
-             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition"
+               to="/viewer/file"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition"
               active-class="bg-blue-50 text-blue-600 font-semibold shadow-sm"
-             :title="!isOpen ? 'Folder' : ''"
+               :title="!isOpen ? 'Folder' : ''"
             >
               <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -122,8 +123,8 @@
         </nav>
       </div>
 
-      <!-- Tombol Logout Minimalis -->
-      <div class="p-3 border-t border-slate-100">
+      <!-- Tombol Logout Minimalis (Dipastikan selalu menempel di bagian paling bawah sidebar) -->
+      <div class="p-3 border-t border-slate-100 shrink-0 bg-white">
         <button 
           @click="handleLogout" 
           class="w-full flex items-center justify-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-rose-600 bg-rose-50/50 hover:bg-rose-100/70 transition"
@@ -136,7 +137,7 @@
     </aside>
 
     <!-- Konten Utama -->
-    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto min-h-screen">
       <!-- Top Navbar Minimalis -->
       <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20">
         <div class="flex items-center gap-4">
@@ -215,7 +216,7 @@ onMounted(() => {
   window.addEventListener('resize', checkScreenSize);
 });
 
-const handleLogout = async () => {
+const handlerLogout = async () => {
   try {
     await api.post('/logout');
   } catch (e) {
@@ -226,4 +227,6 @@ const handleLogout = async () => {
     router.push('/login');
   }
 };
+
+const handleLogout = handlerLogout;
 </script>
