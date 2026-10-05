@@ -25,23 +25,50 @@
 
       <!-- Tabel File Terbaru dengan Jarak Aman -->
       <div>
-        <LatestFilesTable :files="stats.latest_files"/>
+        <LatestFilesTable 
+          :files="stats.latest_files"
+          @detail="openDetailModal"
+        />
       </div>
     </div>
+
+    <!-- Modal Detail File (Ditambahkan di sini) -->
+    <FileDetailModal 
+      :is-open="isDetailModalOpen"
+      :file-data="selectedFile"
+      :user-role="userRole"
+      @close="isDetailModalOpen = false"
+      @refresh="fetchDashboardData"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useDashboard } from '../../composables/useDashboard';
 import StatCards from '../../components/dashboard/StatCards.vue';
 import LatestFilesTable from '../../components/dashboard/LatestFilesTable.vue';
+import FileDetailModal from '../../components/files/FileDetailModal.vue';
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue';
 
 // Menggunakan composable useDashboard
 const { stats, loading, fetchDashboardData } = useDashboard();
 
+// State Modal Detail & User Role
+const isDetailModalOpen = ref(false);
+const selectedFile = ref(null);
+const userRole = ref('viewer');
+
 onMounted(() => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  userRole.value = user.role || 'viewer';
+
   fetchDashboardData();
 });
+
+// Fungsi untuk membuka modal detail saat tombol detail di tabel diklik
+const openDetailModal = (file) => {
+  selectedFile.value = file;
+  isDetailModalOpen.value = true;
+};
 </script>
