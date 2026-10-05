@@ -6,17 +6,6 @@
         <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Manajemen Seluruh File</h2>
         <p class="text-sm text-slate-500 mt-1">Daftar semua dokumen yang diunggah ke dalam sistem Lion FMS</p>
       </div>
-
-      <button 
-        v-if="userRole === 'admin'"
-        @click="openUploadModal('create')" 
-        class="btn-primary py-2 px-4 flex items-center gap-2"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        <span>Upload File Baru</span>
-      </button>
     </div>
 
     <!-- Filter & Search Bar Section (Atas rata, tanpa bayangan bawah agar menyatu dengan tabel) -->
@@ -57,22 +46,10 @@
       <FileTable 
         :files="files"
         :user-role="userRole"
-        @open-upload="openUploadModal('create')"
         @download="downloadFile"
         @detail="openDetailModal"
-        @edit="openUploadModal('edit', $event)"
-        @delete="handleDeleteFile"
       />
     </div>
-
-    <!-- Modal Upload / Edit File -->
-    <UploadFileModal 
-      :is-open="isUploadModalOpen"
-      :mode="uploadModalMode"
-      :file-data="selectedFile"
-      @close="isUploadModalOpen = false"
-      @refresh="fetchFilesList"
-    />
 
     <!-- Modal Detail File -->
     <FileDetailModal 
@@ -84,7 +61,7 @@
       @preview="openPreviewModal"
     />
 
-    <!-- Modal Preview File -->
+    <!-- Modal Preview File (Ditambahkan di sini) -->
     <FilePreviewModal 
       :is-open="isPreviewModalOpen"
       :file-data="selectedFile"
@@ -99,30 +76,27 @@ import api from '../../service/api';
 
 import { useFiles } from '../../composables/useFile';
 import FileTable from '../../components/files/FileTable.vue';
-import UploadFileModal from '../../components/files/UploadFileModal.vue';
 import FileDetailModal from '../../components/files/FileDetailModal.vue';
-import FilePreviewModal from '../../components/files/FilePreviewModal.vue';
+import FilePreviewModal from '../../components/files/FilePreviewModal.vue'; // <-- Tambahkan import ini
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue';
 
 // Mengambil fungsi global alert dari MainLayout
 const showAlert = inject('showAlert');
 
 const departments = ref([]);
-const userRole = ref('');
+const userRole = ref('viewer');
 
 // State Filter & Search
 const searchQuery = ref('');
 const selectedDepartment = ref('');
 
-// State Modal
-const isUploadModalOpen = ref(false);
-const uploadModalMode = ref('create');
+// State Modal Detail & Preview
 const isDetailModalOpen = ref(false);
-const isPreviewModalOpen = ref(false);
+const isPreviewModalOpen = ref(false); // <-- Tambahkan state ini
 const selectedFile = ref(null);
 
-// Memanggil fungsi & state dari composable useFiles dengan menyertakan showAlert
-const { files, loading, fetchFiles, downloadFile, deleteFile } = useFiles(showAlert);
+// Memanggil fungsi & state dari composable useFiles
+const { files, loading, fetchFiles, downloadFile } = useFiles(showAlert);
 
 onMounted(() => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -160,25 +134,14 @@ const handleSearch = () => {
   }, 300);
 };
 
-const openUploadModal = (mode, file = null) => {
-  uploadModalMode.value = mode;
-  selectedFile.value = file;
-  isUploadModalOpen.value = true;
-};
-
 const openDetailModal = (file) => {
   selectedFile.value = file;
   isDetailModalOpen.value = true;
 };
 
+// Fungsi handler untuk membuka modal preview
 const openPreviewModal = (file) => {
   selectedFile.value = file;
   isPreviewModalOpen.value = true;
-};
-
-const handleDeleteFile = async (id) => {
-  await deleteFile(id, () => {
-    fetchFilesList();
-  });
 };
 </script>

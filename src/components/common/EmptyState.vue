@@ -2,7 +2,6 @@
   <div class="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-2xl border border-slate-200 shadow-sm w-full my-4">
     <!-- Ilustrasi Ikon Kotak / Folder Kosong -->
     <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-4 shadow-inner">
-      📁
     </div>
     
     <!-- Judul & Deskripsi -->

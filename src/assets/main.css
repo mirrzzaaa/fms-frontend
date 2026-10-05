@@ -1,34 +1,40 @@
 @import "tailwindcss";
 @import './base.css';
 
-/* Custom utilities atau komponen di Tailwind v4 */
+/* Custom utilities & components untuk Tailwind v4 */
 @layer components {
+  /* Tombol Utama (Responsif: text-sm di mobile, text-base di layar md ke atas) */
   .btn-primary {
-    @apply px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center gap-2;
+    @apply w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm sm:text-base rounded-xl sm:rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center gap-2;
   }
   
+  /* Tombol Sekunder */
   .btn-secondary {
-    @apply px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm border border-slate-300 rounded-lg shadow-sm transition-all duration-200;
+    @apply w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm sm:text-base border border-slate-300 rounded-xl sm:rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center gap-2;
   }
 
+  /* Tombol Aksi Tabel (Edit) */
   .btn-edit {
-    @apply px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs rounded-md shadow-sm transition-all duration-200 flex items-center gap-1.5;
+    @apply px-2.5 py-1 sm:px-3 sm:py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs rounded-md shadow-sm transition-all duration-200 flex items-center gap-1;
   }
 
-  /* Tombol Hapus (Merah) */
+  /* Tombol Aksi Tabel (Hapus) */
   .btn-danger {
-    @apply px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs rounded-md shadow-sm transition-all duration-200 flex items-center gap-1.5;
+    @apply px-2.5 py-1 sm:px-3 sm:py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs rounded-md shadow-sm transition-all duration-200 flex items-center gap-1;
   }
 
+  /* Tombol Aksi Tabel (Detail) */
   .btn-detail {
-    @apply px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-medium text-xs rounded-md transition-all duration-200 flex items-center gap-1.5;
+    @apply px-2.5 py-1 sm:px-3 sm:py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-medium text-xs rounded-md transition-all duration-200 flex items-center gap-1;
   }
 
+  /* Kotak Card Responsif */
   .card-box {
-    @apply bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow;
+    @apply bg-white p-4 sm:p-6 rounded-2xl sm:rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow;
   }
 
+  /* Header Tabel */
   .table-header {
-    @apply bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider;
+    @apply bg-slate-50 border-b border-slate-200 text-sm font-bold text-black tracking-wider;
   }
 }

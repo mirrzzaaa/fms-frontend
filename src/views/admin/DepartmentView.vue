@@ -1,23 +1,26 @@
 <template>
-  <div>
-    <div class="mb-6">
-      <h2 class="text-2xl font-bold text-gray-800">Manajemen Departemen</h2>
-      <p class="text-sm text-gray-500 mt-1">Kelola seluruh data departemen operasional Lion Group khusus Administrator</p>
+  <div class="space-y-6">
+    <!-- Header Halaman -->
+    <div class="py-6">
+      <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Manajemen Departemen</h2>
+      <p class="text-sm text-slate-500 mt-1">Kelola seluruh data departemen operasional Lion Group khusus Administrator</p>
     </div>
 
-    <!-- Alert Notifikasi -->
-    <div v-if="message" class="mb-4 p-3 bg-green-100 text-green-700 rounded text-sm">
-      {{ message }}
+    <!-- Loading State menggunakan LoadingSpinner -->
+    <div v-if="loading" class="py-16">
+      <LoadingSpinner message="Memuat data departemen..." />
     </div>
 
-    <!-- Memanggil Komponen Tabel -->
-    <DepartmentTable 
-      :departments="departments"
-      @open-create="openModal('create')"
-      @open-edit="openModal('edit', $event)"
-      @open-detail="openModal('detail', $event)"
-      @delete="deleteDepartment"
-    />
+    <!-- Memanggil Komponen Tabel Departemen (Hanya tampil jika tidak loading) -->
+    <div v-else>
+      <DepartmentTable 
+        :departments="departments"
+        @open-create="openModal('create')"
+        @open-edit="openModal('edit', $event)"
+        @open-detail="openModal('detail', $event)"
+        @delete="deleteDepartment"
+      />
+    </div>
 
     <!-- Memanggil Komponen Modal -->
     <DepartmentModal 
@@ -31,13 +34,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import api from '../../service/api';
 import DepartmentTable from '../../components/departments/DepartmentTable.vue';
 import DepartmentModal from '../../components/departments/DepartmentModal.vue';
+import LoadingSpinner from '../../components/common/LoadingSpinner.vue';
+
+// Mengambil fungsi global alert dari MainLayout
+const showAlert = inject('showAlert');
 
 const departments = ref([]);
-const message = ref('');
+const loading = ref(false);
 const isModalOpen = ref(false);
 const modalMode = ref('create'); // 'create', 'edit', 'detail'
 const selectedDept = ref(null);
@@ -47,11 +54,15 @@ onMounted(() => {
 });
 
 const fetchDepartments = async () => {
+  loading.value = true;
   try {
     const response = await api.get('/departments');
     departments.value = response.data.data || response.data;
   } catch (error) {
     console.error('Gagal memuat departemen', error);
+    showAlert('Gagal memuat data departemen.', 'error');
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -65,16 +76,15 @@ const handleSave = async (data) => {
   try {
     if (data.mode === 'create') {
       await api.post('/departments', { name: data.name });
-      message.value = 'Departemen berhasil ditambahkan!';
+      showAlert('Departemen berhasil ditambahkan!', 'success');
     } else if (data.mode === 'edit') {
       await api.put(`/departments/${data.id}`, { name: data.name });
-      message.value = 'Departemen berhasil diperbarui!';
+      showAlert('Departemen berhasil diperbarui!', 'success');
     }
     isModalOpen.value = false;
     fetchDepartments();
-    setTimeout(() => message.value = '', 3000);
   } catch (error) {
-    alert(error.response?.data?.message || 'Terjadi kesalahan');
+    showAlert(error.response?.data?.message || 'Terjadi kesalahan', 'error');
   }
 };
 
@@ -83,11 +93,10 @@ const deleteDepartment = async (id) => {
   
   try {
     await api.delete(`/departments/${id}`);
-    message.value = 'Departemen berhasil dihapus!';
+    showAlert('Departemen berhasil dihapus!', 'success');
     fetchDepartments();
-    setTimeout(() => message.value = '', 3000);
   } catch (error) {
-    alert(error.response?.data?.message || 'Gagal menghapus departemen');
+    showAlert(error.response?.data?.message || 'Gagal menghapus departemen', 'error');
   }
 };
 </script>

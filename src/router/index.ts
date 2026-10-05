@@ -54,7 +54,17 @@ const router = createRouter({
           path: 'dashboard',
           name: 'viewer-dashboard',
           component: AdminDashboard // atau ViewerDashboard khusus
-        }
+        },
+                {
+          path: 'folder',
+          name: 'folder',
+          component: () => import('../views/viewer/FolderView.vue')
+        },
+        {
+          path: 'file',
+          name: 'file',
+          component: () => import('../views/viewer/FileView.vue')
+        },
       ]
     }
   ]

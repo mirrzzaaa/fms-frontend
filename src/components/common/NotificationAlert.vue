@@ -2,13 +2,19 @@
   <transition name="fade">
     <div v-if="show" :class="alertClasses" class="fixed top-5 right-5 z-50 flex items-center justify-between p-4 rounded-xl shadow-lg border max-w-md w-full transition-all duration-300">
       <div class="flex items-center gap-3">
-        <!-- Icon Sukses / Error -->
-        <span v-if="type === 'success'" class="text-emerald-600 font-bold text-lg">✅</span>
-        <span v-else class="text-rose-600 font-bold text-lg">⚠️</span>
+        <!-- Icon Sukses (SVG CheckCircle) -->
+        <svg v-if="type === 'success'" class="w-6 h-6 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+
+        <!-- Icon Error (SVG ExclamationCircle) -->
+        <svg v-else class="w-6 h-6 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
         
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            {{ type === 'success' ? 'Berhasil' : 'Peringatan / Error' }}
+          <p class="text-md font-semibold  tracking-wider text-vlack">
+            {{ type === 'success' ? 'Berhasil' : 'Error' }}
           </p>
           <p class="text-sm font-medium text-slate-800">{{ message }}</p>
         </div>
@@ -23,7 +29,7 @@
 </template>
 
 <script setup>
-import { computed, watch, onMounted } from 'prop-types'; // atau setup standar vue
+import { computed, watch } from 'vue';
 
 const props = defineProps({
   show: { type: Boolean, default: false },

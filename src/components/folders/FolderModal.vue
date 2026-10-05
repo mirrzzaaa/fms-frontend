@@ -47,9 +47,10 @@
             </button>
             <button 
               type="submit" 
-              class="px-4 py-2 rounded-xl text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-500/30 transition active:scale-[0.98]"
+              :disabled="loading"
+              class="px-4 py-2 rounded-xl text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-500/30 transition active:scale-[0.98] disabled:opacity-50"
             >
-              Simpan
+              {{ loading ? 'Menyimpan...' : 'Simpan' }}
             </button>
           </div>
         </form>
@@ -65,35 +66,28 @@ const props = defineProps({
   isOpen: Boolean,
   mode: { type: String, default: 'create' },
   folderData: { type: Object, default: null },
-  currentParentId: { type: [Number, null], default: null }
+  currentParentId: { type: [Number, String, null], default: null },
+  loading: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['close', 'save']);
 
 const form = reactive({
-  id: null,
-  name: '',
-  parent_id: null
+  name: ''
 });
 
 watch(() => props.folderData, (newData) => {
   if (newData && props.mode === 'edit') {
-    form.id = newData.id;
-    form.name = newData.name;
-    form.parent_id = newData.parent_id;
+    form.name = newData.name || '';
   } else {
-    form.id = null;
     form.name = '';
-    form.parent_id = props.currentParentId;
   }
 }, { immediate: true });
 
 const handleSubmit = () => {
   emit('save', { 
-    id: form.id, 
-    name: form.name, 
-    parent_id: props.mode === 'create' ? props.currentParentId : form.parent_id,
-    mode: props.mode 
+    name: form.name,
+    parent_id: props.currentParentId // Mengirim ID folder tempat user sedang berada saat ini
   });
 };
 </script>

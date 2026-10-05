@@ -1,92 +1,113 @@
 import { ref } from 'vue';
 import api from '../service/api';
 
-export function useFolders() {
-  const folders = ref([]);
+export function useFolders(showAlert) {
+  const currentFolderId = ref(null);
   const breadcrumbs = ref([]);
-  const currentParentId = ref(null);
+  const currentFolders = ref([]);
+  const currentFiles = ref([]);
   const loading = ref(false);
-  const message = ref('');
 
-  // 1. Ambil data folder
-  const fetchFolders = async (parentId = null) => {
+  const fetchDirectoryContents = async (folderId) => {
     loading.value = true;
     try {
-      const response = await api.get('/folders', { params: { parent_id: parentId } });
-      folders.value = response.data.data || response.data;
+      const url = folderId ? `/folders/${folderId}` : '/folders';
+      const response = await api.get(url);
+      
+      const result = response.data.data;
+
+      if (folderId) {
+        currentFolders.value = result.children || [];
+        currentFiles.value = result.files || [];
+      } else {
+        currentFolders.value = result.folders || [];
+        currentFiles.value = result.files || [];
+      }
     } catch (error) {
-      console.error('Gagal memuat folder', error);
+      console.error('Gagal memuat isi direktori:', error.response?.data || error.message);
+      if (showAlert) showAlert('Gagal memuat isi direktori dari server.', 'error');
     } finally {
       loading.value = false;
     }
   };
 
-  // 2. Simpan Folder (Create atau Update)
-  const saveFolder = async (data, onSuccess) => {
+  const enterFolder = (folder) => {
+    breadcrumbs.value.push({ id: folder.id, name: folder.name });
+    currentFolderId.value = folder.id;
+    fetchDirectoryContents(folder.id);
+  };
+
+  const goToRoot = () => {
+    breadcrumbs.value = [];
+    currentFolderId.value = null;
+    fetchDirectoryContents(null);
+  };
+
+  const navigateToCrumb = (crumb, index) => {
+    breadcrumbs.value = breadcrumbs.value.slice(0, index + 1);
+    currentFolderId.value = crumb.id;
+    fetchDirectoryContents(crumb.id);
+  };
+
+  const saveFolder = async (payload, mode, folderId = null) => {
+    loading.value = true;
     try {
-      if (data.mode === 'create') {
-        await api.post('/folders', { 
-          name: data.name, 
-          parent_id: data.parent_id 
+      if (mode === 'edit') {
+        await api.put(`/folders/${folderId}`, { name: payload.name });
+        if (showAlert) showAlert('Folder berhasil diperbarui!', 'success');
+      } else {
+        await api.post('/folders', {
+          name: payload.name,
+          parent_id: currentFolderId.value 
         });
-        message.value = 'Folder berhasil dibuat!';
-      } else if (data.mode === 'edit') {
-        await api.put(`/folders/${data.id}`, { 
-          name: data.name 
-        });
-        message.value = 'Folder berhasil diubah namanya!';
+        if (showAlert) showAlert('Folder baru berhasil dibuat!', 'success');
       }
       
-      if (onSuccess) onSuccess();
-      setTimeout(() => message.value = '', 3000);
+      fetchDirectoryContents(currentFolderId.value);
+      return true;
     } catch (error) {
-      alert(error.response?.data?.message || 'Terjadi kesalahan saat menyimpan folder');
+      console.error('Gagal menyimpan folder:', error.response?.data || error.message);
+      if (showAlert) showAlert(error.response?.data?.message || 'Gagal menyimpan folder', 'error');
+      return false;
+    } finally {
+      loading.value = false;
     }
   };
 
-  // 3. Hapus Folder
-  const deleteFolder = async (id, onSuccess) => {
-    if (!confirm('Apakah kamu yakin ingin menghapus folder ini? (Sub-folder & file di dalamnya akan ikut terhapus)')) return;
+  const deleteFolder = async (folderId) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus folder ini?')) return;
     try {
-      await api.delete(`/folders/${id}`);
-      message.value = 'Folder berhasil dihapus!';
-      if (onSuccess) onSuccess();
-      setTimeout(() => message.value = '', 3000);
+      await api.delete(`/folders/${folderId}`);
+      if (showAlert) showAlert('Folder berhasil dihapus!', 'success');
+      fetchDirectoryContents(currentFolderId.value);
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal menghapus folder');
+      if (showAlert) showAlert(error.response?.data?.message || 'Gagal menghapus folder', 'error');
     }
   };
 
-  // Navigasi
-  const enterFolder = (folder, callback) => {
-    breadcrumbs.value.push(folder);
-    currentParentId.value = folder.id;
-    if (callback) callback(folder.id);
-  };
-
-  const navigateToRoot = (callback) => {
-    breadcrumbs.value = [];
-    currentParentId.value = null;
-    if (callback) callback(null);
-  };
-
-  const navigateToFolder = (crumb, index, callback) => {
-    breadcrumbs.value = breadcrumbs.value.slice(0, index + 1);
-    currentParentId.value = crumb.id;
-    if (callback) callback(crumb.id);
+  const deleteFile = async (fileId) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus file ini?')) return;
+    try {
+      await api.delete(`/files/${fileId}`);
+      if (showAlert) showAlert('File berhasil dihapus!', 'success');
+      fetchDirectoryContents(currentFolderId.value);
+    } catch (error) {
+      if (showAlert) showAlert(error.response?.data?.message || 'Gagal menghapus file', 'error');
+    }
   };
 
   return {
-    folders,
+    currentFolderId,
     breadcrumbs,
-    currentParentId,
+    currentFolders,
+    currentFiles,
     loading,
-    message,
-    fetchFolders,
+    fetchDirectoryContents,
+    enterFolder,
+    goToRoot,
+    navigateToCrumb,
     saveFolder,
     deleteFolder,
-    enterFolder,
-    navigateToRoot,
-    navigateToFolder
+    deleteFile
   };
 }

@@ -1,262 +1,159 @@
 <template>
-  <div>
-    <!-- Header & Navigasi Breadcrumb -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+  <div class="space-y-6">
+    <!-- Header Halaman -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-3">
       <div>
-        <h2 class="text-2xl font-bold text-gray-800">Manajemen Folder & File</h2>
-        <!-- Breadcrumb untuk navigasi hierarki -->
-        <div class="flex items-center space-x-2 text-sm text-gray-500 mt-1">
-          <button @click="navigateToRoot" class="hover:text-blue-600 font-medium">Root Folder</button>
-          <template v-for="(crumb, index) in breadcrumbs" :key="crumb.id">
-            <span>/</span>
-            <button @click="navigateToFolder(crumb, index)" class="hover:text-blue-600 font-medium">
-              {{ crumb.name }}
-            </button>
-          </template>
-        </div>
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Manajemen Direktori & File</h2>
+        <p class="text-sm text-slate-500 mt-1">Jelajahi folder dan dokumen perusahaan secara terstruktur</p>
       </div>
 
-      <button 
-        v-if="userRole === 'admin'"
-        @click="openFolderModal('create')" 
-        class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
-      >
-        + Buat Folder Baru
-      </button>
+      <!-- Tombol Aksi Admin (Buat Folder & Upload File ke Folder Aktif) -->
+      <div v-if="userRole === 'admin'" class="flex items-center gap-2">
+        <button 
+          @click="openCreateFolderModal" 
+          class="btn-primary py-2 px-4 flex items-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Buat Folder Baru</span>
+        </button>
+
+<button 
+          @click="openUploadFileModal" 
+          class="btn-secondary py-2 px-4 flex items-center gap-2"
+        >
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <span>Upload File di Sini</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Alert Notifikasi -->
-    <div v-if="message" class="mb-4 p-3 bg-green-100 text-green-700 rounded text-sm">
-      {{ message }}
+    <!-- Komponen Navigasi Breadcrumb -->
+    <Breadcrumb 
+      :breadcrumbs="breadcrumbs" 
+      @root="goToRoot" 
+      @navigate="navigateToCrumb" 
+    />
+
+    <!-- Loading State -->
+    <div v-if="loading" class="py-12">
+      <LoadingSpinner message="Memuat isi direktori..." />
     </div>
 
-    <!-- Daftar Sub-Folder -->
-    <FolderTable 
-      :folders="folders"
-      :user-role="userRole"
-      @enter="enterFolder"
-      @edit="openFolderModal('edit', $event)"
-      @delete="deleteFolder"
-    />
+    <!-- Komponen Penjelajah File & Folder -->
+    <div v-else class="py-2">
+      <FolderBrowser 
+        :folders="currentFolders"
+        :files="currentFiles"
+        :user-role="userRole"
+        @enter-folder="enterFolder"
+        @edit-folder="openEditFolderModal"
+        @delete-folder="deleteFolder"
+        @download-file="downloadFile"
+        @delete-file="deleteFile"
+      />
+    </div>
 
-    <!-- Daftar File di Folder Ini -->
-    <FileTable 
-      :files="files"
-      :user-role="userRole"
-      @open-upload="openUploadModal('create')"
-      @download="downloadFile"
-      @detail="openDetailModal"
-      @edit="openUploadModal('edit', $event)"
-      @delete="deleteFile"
-    />
-
-    <!-- Modal Form Folder -->
+    <!-- Modal Form Buat / Edit Folder -->
     <FolderModal 
-      :is-open="isFolderModalOpen"
-      :mode="folderModalMode"
-      :folder-data="selectedFolder"
-      :current-parent-id="currentParentId"
-      @close="isFolderModalOpen = false"
-      @save="handleSaveFolder"
+      v-if="isModalOpen"
+      :isOpen="isModalOpen"
+      :mode="modalMode"
+      :folderData="selectedFolder"
+      :currentParentId="currentFolderId"
+      :loading="loading"
+      @close="closeFolderModal"
+      @save="handleFolderSave"
     />
 
-    <!-- Modal Upload / Edit File -->
+    <!-- Modal Upload File (Langsung Mengambil currentFolderId sebagai tujuan) -->
     <UploadFileModal 
       :is-open="isUploadModalOpen"
-      :mode="uploadModalMode"
-      :file-data="selectedFile"
-      :current-folder-id="currentParentId"
+      mode="create"
+      :current-folder-id="currentFolderId"
       @close="isUploadModalOpen = false"
-      @save="handleSaveFile"
-    />
-
-    <!-- Modal Detail File -->
-    <FileDetailModal 
-      :is-open="isDetailModalOpen"
-      :file-data="selectedFile"
-      @close="isDetailModalOpen = false"
+      @refresh="() => fetchDirectoryContents(currentFolderId)"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import api from '../../service/api';
-import FolderTable from '../../components/folders/FolderTable.vue';
+import { ref, onMounted, inject } from 'vue';
+import { useFolders } from '../../composables/useFolder';
+import Breadcrumb from '../../components/common/Breadcrumbs.vue';
+import FolderBrowser from '../../components/folders/FolderBrowser.vue';
+import LoadingSpinner from '../../components/common/LoadingSpinner.vue';
 import FolderModal from '../../components/folders/FolderModal.vue';
-import FileTable from '../../components/files/FileTable.vue';
-import UploadFileModal from '../../components/files/UploadFileModal.vue';
-import FileDetailModal from '../../components/files/FileDetailModal.vue';
+import UploadFileModal from '../../components/files/UploadFileModal.vue'; // <-- Import modal upload file
 
-const folders = ref([]);
-const files = ref([]);
-const breadcrumbs = ref([]);
-const currentParentId = ref(null);
-const userRole = ref('');
-const message = ref('');
+const showAlert = inject('showAlert');
+const userRole = ref('viewer');
 
-// State Modal Folder
-const isFolderModalOpen = ref(false);
-const folderModalMode = ref('create');
+// State untuk Modal Folder
+const isModalOpen = ref(false);
+const modalMode = ref('create');
 const selectedFolder = ref(null);
 
-// State Modal File
+// State untuk Modal Upload File di dalam folder aktif
 const isUploadModalOpen = ref(false);
-const uploadModalMode = ref('create');
-const isDetailModalOpen = ref(false);
-const selectedFile = ref(null);
+
+const {
+  currentFolderId,
+  breadcrumbs,
+  currentFolders,
+  currentFiles,
+  loading,
+  fetchDirectoryContents,
+  enterFolder,
+  goToRoot,
+  navigateToCrumb,
+  deleteFolder,
+  deleteFile,
+  saveFolder
+} = useFolders(showAlert);
 
 onMounted(() => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   userRole.value = user.role || 'viewer';
-  loadFolderContent(null);
+  fetchDirectoryContents(null);
 });
 
-// Load Folder dan File sekaligus berdasarkan folder aktif
-const loadFolderContent = async (parentId = null) => {
-  try {
-    // 1. Ambil data sub-folder
-    const folderRes = await api.get('/folders', { params: { parent_id: parentId } });
-    folders.value = folderRes.data.data || folderRes.data;
-
-    // 2. Ambil data file di folder ini
-    const fileRes = await api.get('/files', { params: { folder_id: parentId } });
-    files.value = fileRes.data.data?.data || fileRes.data.data || fileRes.data;
-  } catch (error) {
-    console.error('Gagal memuat isi folder', error);
-  }
+const openCreateFolderModal = () => {
+  modalMode.value = 'create';
+  selectedFolder.value = { parent_id: currentFolderId.value };
+  isModalOpen.value = true;
 };
 
-// Navigasi masuk sub-folder
-const enterFolder = (folder) => {
-  breadcrumbs.value.push(folder);
-  currentParentId.value = folder.id;
-  loadFolderContent(folder.id);
-};
-
-// Kembali ke Root
-const navigateToRoot = () => {
-  breadcrumbs.value = [];
-  currentParentId.value = null;
-  loadFolderContent(null);
-};
-
-// Navigasi lewat Breadcrumb
-const navigateToFolder = (crumb, index) => {
-  breadcrumbs.value = breadcrumbs.value.slice(0, index + 1);
-  currentParentId.value = crumb.id;
-  loadFolderContent(crumb.id);
-};
-
-// --- Aksi Folder ---
-const openFolderModal = (mode, folder = null) => {
-  folderModalMode.value = mode;
+const openEditFolderModal = (folder) => {
+  modalMode.value = 'edit';
   selectedFolder.value = folder;
-  isFolderModalOpen.value = true;
+  isModalOpen.value = true;
 };
 
-const handleSaveFolder = async (data) => {
-  try {
-    if (data.mode === 'create') {
-      await api.post('/folders', { name: data.name, parent_id: data.parent_id });
-      message.value = 'Folder berhasil dibuat!';
-    } else if (data.mode === 'edit') {
-      await api.put(`/folders/${data.id}`, { name: data.name });
-      message.value = 'Folder berhasil diubah namanya!';
-    }
-    isFolderModalOpen.value = false;
-    loadFolderContent(currentParentId.value);
-    setTimeout(() => message.value = '', 3000);
-  } catch (error) {
-    alert(error.response?.data?.message || 'Terjadi kesalahan');
+const closeFolderModal = () => {
+  isModalOpen.value = false;
+  selectedFolder.value = null;
+};
+
+const handleFolderSave = async (payload) => {
+  const success = await saveFolder(payload, modalMode.value, selectedFolder.value?.id);
+  if (success) {
+    closeFolderModal();
   }
 };
 
-const deleteFolder = async (id) => {
-  if (!confirm('Apakah kamu yakin ingin menghapus folder ini?')) return;
-  try {
-    await api.delete(`/folders/${id}`);
-    message.value = 'Folder berhasil dihapus!';
-    loadFolderContent(currentParentId.value);
-    setTimeout(() => message.value = '', 3000);
-  } catch (error) {
-    alert(error.response?.data?.message || 'Gagal menghapus folder');
-  }
-};
-
-// --- Aksi File ---
-const openUploadModal = (mode, file = null) => {
-  uploadModalMode.value = mode;
-  selectedFile.value = file;
+const openUploadFileModal = () => {
   isUploadModalOpen.value = true;
 };
 
-const openDetailModal = (file) => {
-  selectedFile.value = file;
-  isDetailModalOpen.value = true;
-};
-
-const handleSaveFile = async (data) => {
-  try {
-    const formData = new FormData();
-    formData.append('title', data.title);
-    formData.append('department_id', data.department_id);
-    formData.append('folder_id', data.folder_id ?? '');
-
-    if (data.mode === 'create') {
-      if (data.file) formData.append('file', data.file);
-      await api.post('/files', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      message.value = 'File berhasil diunggah!';
-    } else if (data.mode === 'edit') {
-      // Untuk update, gunakan method PUT/POST sesuai backend
-      await api.put(`/files/${data.id}`, {
-        title: data.title,
-        department_id: data.department_id,
-        folder_id: data.folder_id
-      });
-      message.value = 'Informasi file berhasil diperbarui!';
-    }
-
-    isUploadModalOpen.value = false;
-    loadFolderContent(currentParentId.value);
-    setTimeout(() => message.value = '', 3000);
-  } catch (error) {
-    alert(error.response?.data?.message || 'Gagal menyimpan file');
-  }
-};
-
-const downloadFile = async (file) => {
-  try {
-const response = await api.get(`/files/${file.id}/download`, {
-  responseType: 'blob'
-});
-    const blob = new Blob([response.data]);
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', file.original_filename);
-    
-    document.body.appendChild(link);
-    link.click();
-    
-    link.parentNode.removeChild(link);
-    window.URL.revokeObjectURL(link.href);
-  } catch (error) {
-    console.error('Gagal mendownload file:', error);
-    alert('Gagal mendownload file dari server.');
-  }
-};
-
-const deleteFile = async (id) => {
-  if (!confirm('Apakah kamu yakin ingin menghapus file ini?')) return;
-  try {
-    await api.delete(`/files/${id}`);
-    message.value = 'File berhasil dihapus!';
-    loadFolderContent(currentParentId.value);
-    setTimeout(() => message.value = '', 3000);
-  } catch (error) {
-    alert(error.response?.data?.message || 'Gagal menghapus file');
+const downloadFile = (file) => {
+  if (file.url) {
+    window.open(file.url, '_blank');
+  } else {
+    showAlert('Tautan unduhan file tidak tersedia.', 'error');
   }
 };
 </script>
