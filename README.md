@@ -32,22 +32,35 @@ Lion FMS Frontend adalah aplikasi antarmuka pengguna berbasis **Vue 3** (dengan 
 
 Halaman login memungkinkan pengguna memasukkan email dan kata sandi untuk masuk ke sistem sesuai hak akses masing-masing (*Admin* atau *Viewer*).
 
-### 2. Manajemen Direktori & Penjelajah Folder
+### 2. Dashboard
+
+Halaman Dashboard: Menyajikan antarmuka ringkasan data yang memuat kartu statistik, tabel 10 file terbaru, serta tombol interaktif untuk melihat detail informasi dokumen dan memicu pratinjau file dengan cepat
+<img src="public/screenshots/Dashboard.png" width="920" alt="Folder Page" />
+
+
+### 3. Manajemen Direktori & Penjelajah Folder
 
 - Menampilkan daftar folder dan dokumen perusahaan secara terstruktur.
 - Dilengkapi navigasi **Breadcrumb** untuk memudahkan perpindahan direktori.
 - **Admin** memiliki hak penuh untuk membuat folder baru, mengunggah file ke folder aktif, serta mengubah atau menghapus folder dan file.
+<img src="public/screenshots/Folder.png" width="920" alt="Folder Page" />
 
-### 3. Pencarian & Filter Departemen
+### 4. Pencarian & Filter Departemen
 
 - Kolom pencarian instan untuk mencari file berdasarkan judul atau nama file asli.
 - Filter departemen untuk menyaring dokumen dari departemen tertentu dengan cepat.
+<img src="public/screenshots/Department.png" width="920" alt="Department Page" />
 
-### 4. Pratinjau Dokumen & Detail File
+### 5. Pratinjau Dokumen & Detail File
 
 - Menampilkan informasi detail setiap file: judul, nama file, departemen, pengunggah, dan tanggal unggah.
 - **Preview** interaktif untuk dokumen **PDF** atau **Gambar (JPG/PNG)** di dalam modal tanpa perlu mengunduh.
 - Tombol unduh dan hapus yang terintegrasi sesuai peran pengguna.
+
+<p float="left">
+<img src="public/screenshots/ModalDetailFile.png" width="470" alt="Detail File Modal" />
+<img src="public/screenshots/File.png" width="470" alt="Detail File Modal" />
+</p>
 
 ---
 
