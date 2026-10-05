@@ -129,8 +129,7 @@ Gunakan akun bawaan berikut untuk menguji aplikasi:
 | **Administrator** | `admin@liongroup.co.id`  | `LionGroup2026!` | Kontrol penuh: kelola folder, upload, edit, dan hapus file     |
 | **Viewer**        | `viewer@liongroup.co.id` | `LionGroup2026!` | Menjelajahi direktori, pratinjau dokumen, dan mengunduh file   |
 
-> ⚠️ Akun di atas hanya untuk keperluan development. Ganti password sebelum deploy ke production.
-
+> ⚠️ Akun di atas hanya untuk keperluan development
 ---
 
 ## 📄 License
