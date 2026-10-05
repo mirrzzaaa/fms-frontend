@@ -1,48 +1,138 @@
-# fms-frontend
+<p align="center">
+  <a href="https://vuejs.org/" target="_blank">
+    <img src="https://vuejs.org/images/logo.png" width="100" alt="Vue Logo">
+  </a>
+</p>
 
-This template should help get you started developing with Vue 3 in Vite.
+# Lion FMS (File Management System) - Frontend
 
-## Recommended IDE Setup
+Lion FMS Frontend adalah aplikasi antarmuka pengguna berbasis **Vue 3** (dengan *Composition API* dan *Vue Router*) yang terintegrasi dengan backend Laravel RESTful API. Aplikasi ini dirancang untuk memudahkan pengguna dalam:
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Menjelajahi struktur direktori perusahaan
+- Mengelola file per departemen
+- Melakukan pratinjau dokumen (PDF/Gambar)
+- Mengatur hak akses pengguna (*Admin* dan *Viewer*)
 
-## Recommended Browser Setup
+---
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## 🛠️ Teknologi yang Digunakan
 
-## Type Support for `.vue` Imports in TS
+| Teknologi        | Kegunaan                                                                  |
+| ---------------- | ------------------------------------------------------------------------- |
+| **Vue 3**        | Framework JavaScript untuk membangun antarmuka interaktif berbasis komponen |
+| **Vue Router**   | Pengelola navigasi dan rute halaman SPA                                   |
+| **Tailwind CSS** | Kerangka kerja CSS untuk desain antarmuka yang modern dan responsif       |
+| **Axios**        | Komunikasi data asinkron dengan REST API backend Laravel                  |
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+---
 
-## Customize configuration
+## 📱 Fitur Utama Aplikasi
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### 1. Autentikasi (Login)
 
-## Project Setup
+Halaman login memungkinkan pengguna memasukkan email dan kata sandi untuk masuk ke sistem sesuai hak akses masing-masing (*Admin* atau *Viewer*).
 
-```sh
-npm install
-```
+### 2. Manajemen Direktori & Penjelajah Folder
 
-### Compile and Hot-Reload for Development
+- Menampilkan daftar folder dan dokumen perusahaan secara terstruktur.
+- Dilengkapi navigasi **Breadcrumb** untuk memudahkan perpindahan direktori.
+- **Admin** memiliki hak penuh untuk membuat folder baru, mengunggah file ke folder aktif, serta mengubah atau menghapus folder dan file.
 
-```sh
+### 3. Pencarian & Filter Departemen
+
+- Kolom pencarian instan untuk mencari file berdasarkan judul atau nama file asli.
+- Filter departemen untuk menyaring dokumen dari departemen tertentu dengan cepat.
+
+### 4. Pratinjau Dokumen & Detail File
+
+- Menampilkan informasi detail setiap file: judul, nama file, departemen, pengunggah, dan tanggal unggah.
+- **Preview** interaktif untuk dokumen **PDF** atau **Gambar (JPG/PNG)** di dalam modal tanpa perlu mengunduh.
+- Tombol unduh dan hapus yang terintegrasi sesuai peran pengguna.
+
+---
+
+## ⚙️ Requirement
+
+Pastikan perangkat Anda telah terinstal:
+
+- **Node.js** (versi LTS disarankan, >= 18.x)
+- **NPM** atau **Yarn**
+- Backend Lion FMS yang sudah berjalan (lihat README repository backend)
+
+---
+
+## 📥 Instalasi
+
+1. Clone repository frontend ini ke komputer lokal Anda:
+
+   ```bash
+   git clone <url-repository-frontend-anda>
+   cd fms-frontend
+   ```
+
+2. Install seluruh dependencies:
+
+   ```bash
+   npm install
+   ```
+
+---
+
+## 🔧 Konfigurasi Environment
+
+1. Buat file `.env` di root direktori frontend (atau salin dari `.env.example` jika ada):
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Pengguna Windows (PowerShell):
+
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+2. Sesuaikan URL endpoint API backend Laravel Anda:
+
+   ```env
+   VITE_API_BASE_URL=http://127.0.0.1:8000/api
+   ```
+
+> **Catatan:** Restart `npm run dev` setiap kali file `.env` diubah.
+
+---
+
+## 🚀 Menjalankan Project
+
+Jalankan development server:
+
+```bash
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+Aplikasi dapat diakses melalui browser di **http://localhost:5173**.
 
-```sh
+Untuk build production:
+
+```bash
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+---
 
-```sh
-npm run lint
-```
+## 🔑 Akun Login (Kredensial Pengujian)
+
+Gunakan akun bawaan berikut untuk menguji aplikasi:
+
+| Role              | Email                    | Password         | Hak Akses                                                      |
+| ----------------- | ------------------------ | ---------------- | -------------------------------------------------------------- |
+| **Administrator** | `admin@liongroup.co.id`  | `LionGroup2026!` | Kontrol penuh: kelola folder, upload, edit, dan hapus file     |
+| **Viewer**        | `viewer@liongroup.co.id` | `LionGroup2026!` | Menjelajahi direktori, pratinjau dokumen, dan mengunduh file   |
+
+> ⚠️ Akun di atas hanya untuk keperluan development. Ganti password sebelum deploy ke production.
+
+---
+
+## 📄 License
+
+Open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
